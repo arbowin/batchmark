@@ -1,39 +1,27 @@
-"""High-level pipeline: run, filter, compare, and export results."""
-
-from typing import List, Optional
+"""Pipeline: orchestrate benchmark run → filter → annotate → export."""
+from typing import List, Optional, Dict
 from batchmark.runner import BatchResult, benchmark_command
-from batchmark.filter import FilterCriteria, filter_results, top_n
-from batchmark.comparator import compare, format_comparison
+from batchmark.filter import FilterCriteria, filter_results
+from batchmark.annotator import AnnotatedResult, annotate, build_index, AnnotationIndex
 from batchmark.exporter import export
-from batchmark.formatter import format_table
 
 
 def run_pipeline(
     commands: List[str],
-    iterations: int = 10,
+    iterations: int = 5,
     criteria: Optional[FilterCriteria] = None,
-    top: Optional[int] = None,
+    notes_map: Optional[Dict[str, List[str]]] = None,
     export_path: Optional[str] = None,
     export_fmt: str = "json",
-) -> str:
+) -> AnnotationIndex:
     """
-    Run benchmarks for all commands, apply filters, and return
-    a formatted comparison string. Optionally export results.
-
-    Args:
-        commands: Shell commands to benchmark.
-        iterations: Number of runs per command.
-        criteria: Optional filter criteria to apply.
-        top: If set, keep only the top N fastest results.
-        export_path: If set, export results to this file path.
-        export_fmt: Export format, 'json' or 'csv'.
-
-    Returns:
-        Formatted comparison table as a string.
+    Full pipeline:
+      1. Benchmark each command.
+      2. Optionally filter results.
+      3. Annotate with notes.
+      4. Optionally export.
+      5. Return AnnotationIndex.
     """
-    if not commands:
-        raise ValueError("At least one command is required.")
-
     results: List[BatchResult] = [
         benchmark_command(cmd, iterations) for cmd in commands
     ]
@@ -41,14 +29,12 @@ def run_pipeline(
     if criteria is not None:
         results = filter_results(results, criteria)
 
-    if top is not None:
-        results = top_n(results, top)
-
-    if not results:
-        return "No results matched the given criteria."
+    notes_map = notes_map or {}
+    annotated: List[AnnotatedResult] = [
+        annotate(r, notes_map.get(r.label, [])) for r in results
+    ]
 
     if export_path:
         export(results, export_path, fmt=export_fmt)
 
-    comparison = compare(results)
-    return format_comparison(comparison)
+    return build_index(annotated)
