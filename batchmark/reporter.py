@@ -53,6 +53,18 @@ def build_report(results: List[BatchResult], title: str = "Batchmark Report") ->
 
 
 def save_report(report: Report, path: str, fmt: str = "text") -> None:
+    """Save a report to a file in the specified format.
+
+    Args:
+        report: The Report object to save.
+        path: Destination file path.
+        fmt: Output format, either ``'text'`` or ``'html'``.
+
+    Raises:
+        ValueError: If ``fmt`` is not ``'text'`` or ``'html'``.
+    """
+    if fmt not in ("text", "html"):
+        raise ValueError(f"Unsupported format {fmt!r}. Expected 'text' or 'html'.")
     content = report.to_html() if fmt == "html" else report.to_text()
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
