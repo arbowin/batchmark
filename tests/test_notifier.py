@@ -77,3 +77,19 @@ def test_event_label_matches_result():
     config = NotifierConfig(min_success_rate=1.0)
     events = evaluate(result, config)
     assert events[0].label == "mylabel"
+
+
+def test_notify_callback_receives_correct_label():
+    """Ensure the on_event callback receives events with the correct label."""
+    collected = []
+    result = make_batch("targeted", [999.0], 0)
+    config = NotifierConfig(min_success_rate=1.0, on_event=collected.append)
+    notify([result], config)
+    assert all(e.label == "targeted" for e in collected)
+
+
+def test_notify_empty_results_returns_empty_list():
+    """notify with no results should return an empty list without error."""
+    config = NotifierConfig(min_success_rate=0.5, max_mean_ms=100.0)
+    events = notify([], config)
+    assert events == []
