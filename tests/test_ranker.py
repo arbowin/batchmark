@@ -68,6 +68,20 @@ def test_rank_success_rate_stored():
     assert result.entries[0].success_rate == pytest.approx(0.5)
 
 
+def test_rank_success_rate_full():
+    """Verify success_rate is 1.0 when all runs succeed."""
+    batches = [make_batch("all_good", [0.5, 0.6, 0.7])]
+    result = rank(batches)
+    assert result.entries[0].success_rate == pytest.approx(1.0)
+
+
+def test_rank_success_rate_zero():
+    """Verify success_rate is 0.0 when no runs succeed."""
+    batches = [make_batch("all_bad", [0.1, 0.2, 0.3], successes=0)]
+    result = rank(batches)
+    assert result.entries[0].success_rate == pytest.approx(0.0)
+
+
 def test_format_ranking_contains_label():
     batches = [make_batch("cmd_a", [1.0, 1.2])]
     result = rank(batches)
