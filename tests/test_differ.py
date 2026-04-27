@@ -68,6 +68,15 @@ def test_pct_change_correct():
     assert abs(result.entries[0].pct_change - 0.5) < 1e-6
 
 
+def test_pct_change_improvement_is_negative():
+    """A speedup should result in a negative pct_change value."""
+    before = [make_batch('x', [2.0, 2.0])]
+    after = [make_batch('x', [1.0, 1.0])]
+    result = diff_batches(before, after)
+    assert result.entries[0].pct_change < 0
+    assert abs(result.entries[0].pct_change - (-0.5)) < 1e-6
+
+
 def test_format_diff_contains_label():
     before = [make_batch('mycmd', [1.0, 1.0])]
     after = [make_batch('mycmd', [2.0, 2.0])]
