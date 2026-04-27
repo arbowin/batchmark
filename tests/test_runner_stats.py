@@ -65,6 +65,20 @@ def test_summarize_keys():
     assert set(summary.keys()) == {"min", "max", "mean", "median", "stdev", "count"}
 
 
+def test_summarize_values():
+    summary = summarize([1.0, 2.0, 3.0])
+    assert summary["min"] == pytest.approx(1.0)
+    assert summary["max"] == pytest.approx(3.0)
+    assert summary["mean"] == pytest.approx(2.0)
+    assert summary["median"] == pytest.approx(2.0)
+    assert summary["count"] == 3
+
+
 def test_mean_empty_raises():
     with pytest.raises(ValueError):
         mean([])
+
+
+def test_median_empty_raises():
+    with pytest.raises(ValueError):
+        median([])
