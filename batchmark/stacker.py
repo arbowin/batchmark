@@ -44,6 +44,16 @@ class StackResult:
     def by_source(self, source: str) -> List[StackedLayer]:
         return [lyr for lyr in self.layers if lyr.source == source]
 
+    def best_by_label(self, label: str) -> Optional[StackedLayer]:
+        """Return the StackedLayer with the lowest mean time for the given label.
+
+        Returns None if no layers exist for the label.
+        """
+        candidates = self.by_label(label)
+        if not candidates:
+            return None
+        return min(candidates, key=lambda lyr: lyr.mean)
+
 
 def stack(
     sources: Dict[str, List[BatchResult]],
